@@ -1,0 +1,135 @@
+# "group-agent": a tiny shell program that makes the llm-d inference simulator
+# behave like ONE model sharded across several pods (multi-host inference
+#
+# The contract it simulates:
+#   1. At start-up the leader and all workers form a "communicator".
+#      Workers join the leader they can see, the leader waits until every
+#      worker has joined *it*. Only then does it start serving.
+#   2. If ANY member of a formed group dies or restarts, the communicator is
+#      broken for the survivors. They can NOT repair it in place:
+#        - leader: stops being Ready and makes the simulator return HTTP 500
+#        - worker: stops being Ready (it is bound to a leader that no longer exists)
+#   3. The only way back to a healthy state is to recreate the WHOLE group.
+#
+# LeaderWorkerSet does (3) automatically (restartPolicy: RecreateGroupOnPodRestart).
+# Two hand-rolled StatefulSets do not, which is what the demo shows.
+#
+# Every agent publishes its state at http://<pod>:8080/status, e.g.
+#   role=leader boot=3fa2c1d0 state=serving peer=- reason=-
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: group-agent
+  namespace: lws-demo
+data:
+  group-agent.sh: |
+    #!/bin/sh
+    set -u
+    ROLE=${ROLE:?ROLE must be leader or worker}
+    PORT=8080
+    SIM=http://127.0.0.1:8000          # the simulator, same pod (leader only)
+    BOOT=$(cut -c1-8 /proc/sys/kernel/random/uuid)   # new identity on every (re)start
+    STATE=starting; PEER=-; REASON=-
+
+    log()   { echo "$(date +%H:%M:%S) [$ROLE $BOOT] $*"; }
+    write() { printf 'role=%s boot=%s state=%s peer=%s reason=%s\n' \
+                "$ROLE" "$BOOT" "$STATE" "$PEER" "$REASON" > /www/status.tmp
+              mv /www/status.tmp /www/status; }
+    fetch() { wget -q -T 2 -O - "http://$1:$PORT/status" 2>/dev/null; }
+    field() { echo "$1" | tr ' ' '\n' | sed -n "s/^$2=//p"; }
+    goto()  { [ "$STATE/$REASON" != "$1/$2" ] && log "$STATE -> $1 ($2)"; STATE=$1; REASON=$2; write; }
+
+    # --- topology discovery --------------------------------------------------
+    # LWS injects LWS_LEADER_ADDRESS (<lws>-<group>.<lws>.<ns>) and LWS_GROUP_SIZE.
+    # Worker i of the group has hostname <lws>-<group>-<i> under the same subdomain.
+    # The baseline StatefulSets pass LEADER_HOST / WORKER_HOSTS explicitly instead.
+    if [ -n "${LWS_LEADER_ADDRESS:-}" ]; then
+      LEADER_HOST=$LWS_LEADER_ADDRESS
+      lname=${LWS_LEADER_ADDRESS%%.*}; ldomain=${LWS_LEADER_ADDRESS#*.}
+      WORKER_HOSTS=""; i=1
+      while [ "$i" -lt "$LWS_GROUP_SIZE" ]; do
+        WORKER_HOSTS="$WORKER_HOSTS $lname-$i.$ldomain"; i=$((i+1))
+      done
+    fi
+    LEADER_HOST=${LEADER_HOST:?}; WORKER_HOSTS=${WORKER_HOSTS:-}
+
+    mkdir -p /www; write
+    httpd -p "$PORT" -h /www            # busybox httpd, daemonizes
+    log "started; leader=$LEADER_HOST workers=[$WORKER_HOSTS ]"
+
+    # =========================================================================
+    if [ "$ROLE" = leader ]; then
+      sim_fail() {  # set simulator failure-injection rate (0 = healthy, 100 = all 500s)
+        wget -q -T 2 -O /dev/null --header 'Content-Type: application/json' \
+          --post-data "{\"failure-injection-rate\":$1,\"failure-types\":[\"server_error\"]}" \
+          "$SIM/admin/config" 2>/dev/null; }
+      MEMBERS=""; misses=0
+      goto forming "waiting-for-workers"
+      while :; do
+        case $STATE in
+        forming)
+          ok=1; MEMBERS=""
+          for h in $WORKER_HOSTS; do
+            s=$(fetch "$h")
+            if [ "$(field "$s" state)" = joined ] && [ "$(field "$s" peer)" = "$BOOT" ]; then
+              MEMBERS="$MEMBERS $h=$(field "$s" boot)"
+            else
+              ok=0; why="${h%%.*}:$(field "$s" state)"; [ -z "$s" ] && why="${h%%.*}:unreachable"
+            fi
+          done
+          if [ "$ok" = 1 ]; then
+            if sim_fail 0; then
+              touch /tmp/ready; goto serving "group-formed"; log "members:$MEMBERS"
+            else REASON="simulator-not-up"; write; fi
+          else
+            # no complete group -> the model can't run; make the API say so
+            [ "${failset:-0}" = 1 ] || { sim_fail 100 && failset=1; }
+            REASON="waiting:$why"; write
+          fi
+          ;;
+        serving)
+          bad=""
+          for m in $MEMBERS; do
+            h=${m%%=*}; b=${m#*=}; s=$(fetch "$h")
+            if [ -z "$s" ]; then bad="${h%%.*}:unreachable"
+            elif [ "$(field "$s" boot)" != "$b" ]; then bad="${h%%.*}:restarted"; misses=99
+            elif [ "$(field "$s" state)" != joined ]; then bad="${h%%.*}:$(field "$s" state)"; misses=99
+            fi
+          done
+          if [ -n "$bad" ]; then misses=$((misses+1)); else misses=0; fi
+          if [ "$misses" -ge 3 ]; then
+            rm -f /tmp/ready; sim_fail 100; goto broken "lost-$bad"
+          fi
+          ;;
+        broken)
+          rm -f /tmp/ready; sim_fail 100   # stuck for good, like a hung NCCL communicator
+          ;;
+        esac
+        sleep 1
+      done
+
+    # =========================================================================
+    else
+      misses=0; served=0   # served=1 once our leader has formed the group
+      goto idle "looking-for-leader"
+      while :; do
+        s=$(fetch "$LEADER_HOST"); lb=$(field "$s" boot); ls=$(field "$s" state)
+        case $STATE in
+        idle)
+          if [ "$ls" = forming ]; then PEER=$lb; touch /tmp/ready; goto joined "leader-$lb"; fi
+          ;;
+        joined)
+          [ "$ls" = serving ] && [ "$lb" = "$PEER" ] && served=1
+          if [ -z "$s" ]; then misses=$((misses+1)); else misses=0; fi
+          if [ -n "$s" ] && [ "$lb" != "$PEER" ] && [ "$served" = 0 ] && [ "$ls" = forming ]; then
+            PEER=$lb; goto joined "rejoined-leader-$lb"   # start-up race: group never formed yet
+          elif [ "$misses" -ge 3 ] && [ "$served" = 1 ]; then rm -f /tmp/ready; goto broken "leader-unreachable"
+          elif [ -n "$s" ] && [ "$lb" != "$PEER" ]; then rm -f /tmp/ready; goto broken "leader-restarted"
+          elif [ "$ls" = broken ]; then rm -f /tmp/ready; goto broken "leader-broken"
+          fi
+          ;;
+        broken) : ;;
+        esac
+        sleep 1
+      done
+    fi

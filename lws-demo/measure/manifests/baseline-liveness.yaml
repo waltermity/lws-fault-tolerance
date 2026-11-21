@@ -1,0 +1,114 @@
+# BASELINE 2: the same two StatefulSets as 20-baseline-statefulsets.yaml, plus a liveness probe on every group-agent
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: baseline-lp
+  namespace: lws-demo
+spec:
+  clusterIP: None                 # headless, for per-pod DNS
+  publishNotReadyAddresses: true
+  selector: {app: baseline-lp}
+  ports: [{name: agent, port: 8080}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: baseline-lp-leader
+  namespace: lws-demo
+spec:
+  serviceName: baseline-lp
+  replicas: 1
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels: {app: baseline-lp, role: leader}
+  template:
+    metadata:
+      labels: {app: baseline-lp, role: leader, chaos-target: "true"}
+    spec:
+      terminationGracePeriodSeconds: 2
+      containers:
+        - name: sim
+          image: ghcr.io/llm-d/llm-d-inference-sim:v1.2.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --model=fake-llm-70b
+            - --port=8000
+            - --mode=random
+            - --time-to-first-token=200ms
+            - --inter-token-latency=20ms
+            - --startup-duration=5s
+          ports: [{name: http, containerPort: 8000}]
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 8000}
+            periodSeconds: 2
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+        - name: agent
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/agent/group-agent.sh"]
+          env:
+            - {name: ROLE, value: leader}
+            - {name: LEADER_HOST, value: baseline-lp-leader-0.baseline-lp}
+            - {name: WORKER_HOSTS, value: "baseline-lp-worker-0.baseline-lp baseline-lp-worker-1.baseline-lp"}
+          readinessProbe:
+            exec: {command: ["test", "-f", "/tmp/ready"]}
+            periodSeconds: 1
+          livenessProbe:            # the classic self-healing tool: restart the container when it reports "broken"
+            exec: {command: ["sh", "-c", "! grep -q state=broken /www/status"]}
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts: [{name: agent, mountPath: /agent}]
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+      volumes:
+        - name: agent
+          configMap: {name: group-agent}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: baseline-lp-worker
+  namespace: lws-demo
+spec:
+  serviceName: baseline-lp
+  replicas: 2
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels: {app: baseline-lp, role: worker}
+  template:
+    metadata:
+      labels: {app: baseline-lp, role: worker, chaos-target: "true"}
+    spec:
+      terminationGracePeriodSeconds: 2
+      containers:
+        - name: agent
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/agent/group-agent.sh"]
+          env:
+            - {name: ROLE, value: worker}
+            - {name: LEADER_HOST, value: baseline-lp-leader-0.baseline-lp}
+          readinessProbe:
+            exec: {command: ["test", "-f", "/tmp/ready"]}
+            periodSeconds: 1
+          livenessProbe:
+            exec: {command: ["sh", "-c", "! grep -q state=broken /www/status"]}
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts: [{name: agent, mountPath: /agent}]
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+      volumes:
+        - name: agent
+          configMap: {name: group-agent}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: baseline-lp-api
+  namespace: lws-demo
+spec:
+  selector: {app: baseline-lp, role: leader}
+  ports: [{name: http, port: 8000, targetPort: 8000}]

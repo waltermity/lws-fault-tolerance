@@ -1,0 +1,14 @@
+[
+ {
+  "change": "--time-to-first-token=50ms",
+  "rollout_s": 25.8,
+  "requests": 145,
+  "failed": 1
+ },
+ {
+  "change": "--time-to-first-token=200ms",
+  "rollout_s": 25.5,
+  "requests": 143,
+  "failed": 3
+ }
+]

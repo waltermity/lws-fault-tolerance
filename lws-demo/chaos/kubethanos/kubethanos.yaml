@@ -1,0 +1,73 @@
+# kubethanos: every --interval it deletes a random --ratio of the matching pods.
+# Image is built locally (see Dockerfile) and loaded into kind as kubethanos:local.
+#
+# Targets: pods whose name contains "lws-sim" or "baseline-" (so the loadgen and
+# kubethanos itself are never killed). With 9 target pods and ratio 0.25 it kills
+# 2 random pods per round.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubethanos
+  namespace: lws-demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubethanos
+  namespace: lws-demo
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubethanos
+  namespace: lws-demo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubethanos
+subjects:
+  - kind: ServiceAccount
+    name: kubethanos
+    namespace: lws-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubethanos
+  namespace: lws-demo
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: kubethanos}
+  template:
+    metadata:
+      labels: {app: kubethanos}
+    spec:
+      serviceAccountName: kubethanos
+      containers:
+        - name: kubethanos
+          image: kubethanos:local
+          imagePullPolicy: Never
+          args:
+            - --namespaces=lws-demo
+            - --included-pod-names=lws-sim,baseline-
+            - --interval=60s
+            - --ratio=0.25
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}

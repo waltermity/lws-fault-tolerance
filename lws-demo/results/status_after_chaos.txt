@@ -1,0 +1,16 @@
+POD                  NODE                   READY  AGENT-STATUS
+baseline-leader-0    lws-demo-worker        no     boot=701bef93 state=forming peer=- reason=waiting:baseline-worker-0:broken
+baseline-lp-leader-0 lws-demo-worker        yes    boot=6ad29b3e state=serving peer=- reason=group-formed
+baseline-lp-worker-0 lws-demo-worker2       yes    boot=1b8115de state=joined peer=6ad29b3e reason=rejoined-leader-6ad29b3e
+baseline-lp-worker-1 lws-demo-worker        yes    boot=23536e2d state=joined peer=6ad29b3e reason=leader-6ad29b3e
+baseline-worker-0    lws-demo-worker        no     boot=6ccfe67d state=broken peer=60d12099 reason=leader-restarted
+baseline-worker-1    lws-demo-worker2       yes    boot=b3ad2ee8 state=joined peer=701bef93 reason=leader-701bef93
+lws-one-0            lws-demo-worker2       yes    boot=b8d59196 state=serving peer=- reason=group-formed
+lws-one-0-1          lws-demo-worker2       yes    boot=e8441f59 state=joined peer=b8d59196 reason=leader-b8d59196
+lws-one-0-2          lws-demo-worker2       yes    boot=b1360b04 state=joined peer=b8d59196 reason=leader-b8d59196
+lws-sim-0            lws-demo-worker3       yes    boot=2926034f state=serving peer=- reason=group-formed
+lws-sim-0-1          lws-demo-worker3       yes    boot=610e97ec state=joined peer=2926034f reason=leader-2926034f
+lws-sim-0-2          lws-demo-worker3       yes    boot=980f1700 state=joined peer=2926034f reason=leader-2926034f
+lws-sim-1            lws-demo-worker        yes    boot=f27c8a72 state=serving peer=- reason=group-formed
+lws-sim-1-1          lws-demo-worker        yes    boot=5d6df99f state=joined peer=f27c8a72 reason=leader-f27c8a72
+lws-sim-1-2          lws-demo-worker        yes    boot=24fc56bd state=joined peer=f27c8a72 reason=leader-f27c8a72

@@ -1,0 +1,81 @@
+# Open-loop availability prober used for the measurements.
+# Every INTERVAL seconds it sends one chat-completion request to every target
+# (independent threads, new connection per request) and prints one CSV line:
+#   ts_ms,target,http_code,latency_ms        (http_code 0 = no answer / timeout)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prober
+  namespace: lws-demo
+data:
+  probe.py: |
+    import json, os, socket, threading, time, urllib.error, urllib.request
+
+    INTERVAL = float(os.environ.get("INTERVAL", "0.2"))
+    TIMEOUT = float(os.environ.get("TIMEOUT", "2"))
+    BODY = json.dumps({"model": "fake-llm-70b", "max_tokens": 5,
+                       "messages": [{"role": "user", "content": "hello"}]}).encode()
+    lock = threading.Lock()
+
+    def resolve(host):                      # Service ClusterIPs are stable: resolve once
+        while True:
+            try:
+                return socket.gethostbyname(host)
+            except OSError:
+                time.sleep(1)
+
+    TARGETS = {n: resolve(h) for n, h in (t.split("=") for t in os.environ["TARGETS"].split(","))}
+
+    def probe(name, ip, t_sched):
+        t0 = time.time()
+        try:
+            req = urllib.request.Request(f"http://{ip}:8000/v1/chat/completions", data=BODY,
+                                         headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                r.read()
+                code = r.status
+        except urllib.error.HTTPError as e:
+            code = e.code
+        except Exception:
+            code = 0
+        with lock:
+            print(f"{int(t_sched * 1000)},{name},{code},{int((time.time() - t0) * 1000)}", flush=True)
+
+    print("ts_ms,target,code,latency_ms", flush=True)
+    nxt = time.time()
+    while True:
+        for name, ip in TARGETS.items():
+            threading.Thread(target=probe, args=(name, ip, nxt), daemon=True).start()
+        nxt += INTERVAL
+        time.sleep(max(0.0, nxt - time.time()))
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prober
+  namespace: lws-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: prober}
+  template:
+    metadata:
+      labels: {app: prober}
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: prober
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/prober/probe.py"]
+          env:
+            - {name: INTERVAL, value: "0.2"}
+            - {name: TIMEOUT, value: "2"}
+            - name: TARGETS
+              value: "lws1=lws-one-api,lws2=lws-sim-api,sts=baseline-api,stslp=baseline-lp-api"
+          volumeMounts: [{name: prober, mountPath: /prober}]
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}
+      volumes:
+        - name: prober
+          configMap: {name: prober}

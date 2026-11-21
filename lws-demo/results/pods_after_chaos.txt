@@ -1,0 +1,16 @@
+NAME                   READY   STATUS    RESTARTS        AGE     IP             NODE               NOMINATED NODE   READINESS GATES
+baseline-leader-0      1/2     Running   0               4m27s   10.244.2.136   lws-demo-worker    <none>           <none>
+baseline-lp-leader-0   2/2     Running   0               3m27s   10.244.2.143   lws-demo-worker    <none>           <none>
+baseline-lp-worker-0   1/1     Running   0               4m58s   10.244.1.140   lws-demo-worker2   <none>           <none>
+baseline-lp-worker-1   1/1     Running   8 (5m39s ago)   16m     10.244.2.95    lws-demo-worker    <none>           <none>
+baseline-worker-0      0/1     Running   0               21m     10.244.2.86    lws-demo-worker    <none>           <none>
+baseline-worker-1      1/1     Running   0               2m27s   10.244.1.143   lws-demo-worker2   <none>           <none>
+lws-one-0              2/2     Running   0               117s    10.244.1.147   lws-demo-worker2   <none>           <none>
+lws-one-0-1            1/1     Running   0               117s    10.244.1.148   lws-demo-worker2   <none>           <none>
+lws-one-0-2            1/1     Running   0               117s    10.244.1.149   lws-demo-worker2   <none>           <none>
+lws-sim-0              2/2     Running   0               2m56s   10.244.3.100   lws-demo-worker3   <none>           <none>
+lws-sim-0-1            1/1     Running   0               2m56s   10.244.3.101   lws-demo-worker3   <none>           <none>
+lws-sim-0-2            1/1     Running   0               2m56s   10.244.3.102   lws-demo-worker3   <none>           <none>
+lws-sim-1              2/2     Running   0               3m27s   10.244.2.144   lws-demo-worker    <none>           <none>
+lws-sim-1-1            1/1     Running   0               3m24s   10.244.2.145   lws-demo-worker    <none>           <none>
+lws-sim-1-2            1/1     Running   0               3m24s   10.244.2.146   lws-demo-worker    <none>           <none>

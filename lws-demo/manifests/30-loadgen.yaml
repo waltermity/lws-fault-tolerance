@@ -1,0 +1,46 @@
+# Sends one chat-completion request per second to BOTH deployments and prints
+# a running availability line. Watch it with:
+#   kubectl -n lws-demo logs -f deploy/loadgen
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen
+  namespace: lws-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: loadgen}
+  template:
+    metadata:
+      labels: {app: loadgen}
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: loadgen
+          image: curlimages/curl:8.11.1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              BODY='{"model":"fake-llm-70b","messages":[{"role":"user","content":"hello"}],"max_tokens":5}'
+              probe() {
+                curl -s -o /dev/null -w '%{http_code}' -m 3 -H 'Content-Type: application/json' \
+                  -d "$BODY" "http://$1:8000/v1/chat/completions" 2>/dev/null || true
+              }
+              # availability % counts from each target's first successful answer
+              # (so start-up time is not counted as downtime). HTTP 000 = no ready
+              # endpoint behind the Service (connection refused / timeout).
+              ln=0; lok=0; bn=0; bok=0
+              echo "time      LWS   code avail      BASELINE code avail"
+              while :; do
+                l=$(probe lws-sim-api); b=$(probe baseline-api)
+                [ "$l" = 200 ] || [ "$ln" -gt 0 ] && ln=$((ln+1))
+                [ "$b" = 200 ] || [ "$bn" -gt 0 ] && bn=$((bn+1))
+                [ "$l" = 200 ] && lok=$((lok+1)) && lm="ok  " || lm="FAIL"
+                [ "$b" = 200 ] && bok=$((bok+1)) && bm="ok  " || bm="FAIL"
+                printf '%s  %s %s  %3d%%          %s %s  %3d%%\n' "$(date +%H:%M:%S)" \
+                  "$lm" "$l" $((lok*100/(ln>0?ln:1))) "$bm" "$b" $((bok*100/(bn>0?bn:1)))
+                sleep 1
+              done
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}

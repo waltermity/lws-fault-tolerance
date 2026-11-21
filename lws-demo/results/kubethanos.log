@@ -1,0 +1,124 @@
+time="2026-11-16T13:15:26Z" level=info msg="started reading config" debug=false dryRun=false excludedPodNames= includedPodNames="lws-,baseline-" interval=30s kubeconfig= master= namespaces=lws-demo nodeNames= ratioToKill=0.15
+time="2026-11-16T13:15:26Z" level=info msg="found config with parameters: " kubeconfig= master=
+time="2026-11-16T13:15:26Z" level=info msg="connected to cluster" master="https://10.96.0.1:443" serverVersion=v1.37.0
+time="2026-11-16T13:15:26Z" level=info msg="setting pod filter" excludedPodNames= includedPodNames="lws-,baseline-" namespaces=lws-demo nodeNames=
+time="2026-11-16T13:15:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:15:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:15:26Z" level=info msg="terminating pod" name=lws-sim-0-2 namespace=lws-demo
+time="2026-11-16T13:15:26Z" level=info msg="terminating pod" name=lws-sim-0-1 namespace=lws-demo
+time="2026-11-16T13:15:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:15:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:15:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:15:56Z" level=info msg="terminating pod" name=baseline-leader-0 namespace=lws-demo
+time="2026-11-16T13:16:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:16:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:16:26Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:16:26Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:16:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:16:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:16:56Z" level=info msg="terminating pod" name=lws-sim-1 namespace=lws-demo
+time="2026-11-16T13:16:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:17:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:17:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:17:26Z" level=info msg="terminating pod" name=baseline-leader-0 namespace=lws-demo
+time="2026-11-16T13:17:26Z" level=info msg="terminating pod" name=lws-one-0 namespace=lws-demo
+time="2026-11-16T13:17:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:17:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:17:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:17:56Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:18:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:18:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:18:26Z" level=info msg="terminating pod" name=lws-sim-0-2 namespace=lws-demo
+time="2026-11-16T13:18:26Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:18:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:18:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:18:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:18:56Z" level=info msg="terminating pod" name=lws-sim-0-2 namespace=lws-demo
+time="2026-11-16T13:19:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:19:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:19:26Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:19:26Z" level=info msg="terminating pod" name=baseline-lp-leader-0 namespace=lws-demo
+time="2026-11-16T13:19:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:19:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:19:56Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:19:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:20:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:20:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:20:26Z" level=info msg="terminating pod" name=lws-sim-0-1 namespace=lws-demo
+time="2026-11-16T13:20:26Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:20:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:20:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:20:56Z" level=info msg="terminating pod" name=lws-sim-0 namespace=lws-demo
+time="2026-11-16T13:20:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:21:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:21:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:21:26Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:21:26Z" level=info msg="terminating pod" name=lws-sim-1 namespace=lws-demo
+time="2026-11-16T13:21:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:21:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:21:56Z" level=info msg="terminating pod" name=lws-one-0-1 namespace=lws-demo
+time="2026-11-16T13:21:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:22:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:22:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:22:26Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:22:26Z" level=info msg="terminating pod" name=lws-one-0 namespace=lws-demo
+time="2026-11-16T13:22:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:22:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:22:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:22:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:23:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:23:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:23:26Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:23:26Z" level=info msg="terminating pod" name=baseline-lp-leader-0 namespace=lws-demo
+time="2026-11-16T13:23:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:23:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:23:56Z" level=info msg="terminating pod" name=lws-sim-1-2 namespace=lws-demo
+time="2026-11-16T13:23:56Z" level=info msg="terminating pod" name=baseline-lp-leader-0 namespace=lws-demo
+time="2026-11-16T13:24:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:24:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:24:26Z" level=info msg="terminating pod" name=baseline-leader-0 namespace=lws-demo
+time="2026-11-16T13:24:26Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:24:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:24:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:24:56Z" level=info msg="terminating pod" name=lws-sim-0 namespace=lws-demo
+time="2026-11-16T13:24:56Z" level=info msg="terminating pod" name=lws-one-0-1 namespace=lws-demo
+time="2026-11-16T13:25:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:25:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:25:26Z" level=info msg="terminating pod" name=lws-sim-1-2 namespace=lws-demo
+time="2026-11-16T13:25:26Z" level=info msg="terminating pod" name=baseline-worker-1 namespace=lws-demo
+time="2026-11-16T13:25:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:25:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:25:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:25:56Z" level=info msg="terminating pod" name=lws-sim-0 namespace=lws-demo
+time="2026-11-16T13:26:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:26:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:26:26Z" level=info msg="terminating pod" name=lws-sim-0-2 namespace=lws-demo
+time="2026-11-16T13:26:26Z" level=info msg="terminating pod" name=lws-sim-1 namespace=lws-demo
+time="2026-11-16T13:26:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:26:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:26:56Z" level=info msg="terminating pod" name=lws-sim-1-1 namespace=lws-demo
+time="2026-11-16T13:26:56Z" level=info msg="terminating pod" name=baseline-lp-worker-0 namespace=lws-demo
+time="2026-11-16T13:27:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:27:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:27:26Z" level=info msg="terminating pod" name=lws-sim-1 namespace=lws-demo
+time="2026-11-16T13:27:26Z" level=info msg="terminating pod" name=baseline-leader-0 namespace=lws-demo
+time="2026-11-16T13:27:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:27:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:27:56Z" level=info msg="terminating pod" name=baseline-worker-1 namespace=lws-demo
+time="2026-11-16T13:27:56Z" level=info msg="terminating pod" name=lws-sim-1-2 namespace=lws-demo
+time="2026-11-16T13:28:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:28:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:28:26Z" level=info msg="terminating pod" name=baseline-lp-leader-0 namespace=lws-demo
+time="2026-11-16T13:28:26Z" level=info msg="terminating pod" name=lws-sim-1 namespace=lws-demo
+time="2026-11-16T13:28:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:28:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:28:56Z" level=info msg="terminating pod" name=baseline-worker-1 namespace=lws-demo
+time="2026-11-16T13:28:56Z" level=info msg="terminating pod" name=lws-sim-0-1 namespace=lws-demo
+time="2026-11-16T13:29:26Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:29:26Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:29:26Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:29:26Z" level=info msg="terminating pod" name=baseline-worker-1 namespace=lws-demo
+time="2026-11-16T13:29:56Z" level=info msg="total pods:" size=15
+time="2026-11-16T13:29:56Z" level=info msg="pods to kill:" size=2
+time="2026-11-16T13:29:56Z" level=info msg="terminating pod" name=lws-one-0-2 namespace=lws-demo
+time="2026-11-16T13:29:56Z" level=info msg="terminating pod" name=lws-one-0-1 namespace=lws-demo
